@@ -11,7 +11,6 @@
 #include <libnetfilter_queue/libnetfilter_queue.h>
 #include "netfilter_test.h"
 
-#include <dumpcode.h>
 
 /*
  *	checksites
@@ -74,7 +73,6 @@ confirmblocking(
 			data = (uint8_t*) (tcpptr + TCPHDRLEN(tcpptr));
 			data_length = length - IPHDRLEN(ipptr) - TCPHDRLEN(tcpptr);
 
-			//dumpcode(data, data_length);
 			if(checksites(data, block_list, data_length))
 				return TRUE;
 		}
@@ -101,7 +99,6 @@ callback(
 	u_int32_t payload_length;
 	unsigned char *payload;
 	u_int32_t isblocksite = 0;	// True & false
-	nfmsg->nfgen_family = 0;
 
 	printf("entering callback\n");
 	
@@ -116,13 +113,14 @@ callback(
 	//if (payload_length >= 0)	// Always True
 	printf("payload_len=%d ", payload_length);
 	fputc('\n', stdout);
-	dumpcode(data, payload_length);
 
 	isblocksite = confirmblocking(payload, payload_length);
 
-	if(isblocksite)
+	if(isblocksite) {
+		printf("Blocking!!\n");
 		return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
-	
+	}
+
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
 
