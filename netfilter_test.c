@@ -13,23 +13,35 @@
 
 #include <dumpcode.h>
 
-
 /*
  *	confirmblocking
  *	specific sites confirm.
  *	if site is included specific sites, return true(1).
  */
+#define IPHDRLEN(x)	(((struct iphdr*)x)->ihl * 4)
+#define TCPHDRLEN(x)	(((struct tcphdr*)x)->th_off * 4)
+#define PORT_HTTP	80
+
 uint32_t 
 confirmblocking(
-	unsigned char*	payload, 
+	uint8_t*	payload, 
 	uint32_t 	length) 
 {
-	struct iphdr *ipptr = (struct iphdr *) payload;
-	struct tcphdr *tcpptr = (struct tcphdr *) (payload + (ipptr->ihl * 4));
+	struct iphdr	*ipptr = (struct iphdr *) payload;
+	struct tcphdr	*tcpptr = (struct tcphdr *) (payload + IPHDRLEN(ipptr));
+	uint8_t		*data = NULL;
+	uint32_t	data_length = 0;
 
 	// Check TCP from ipptr	
 	if(ipptr->protocol == IPPROTO_TCP) {
-		return TRUE;
+		if(tcpptr->th_dport == htons(PORT_HTTP)) {
+			data = (uint8_t*) (tcpptr + TCPHDRLEN(tcpptr));
+			data_length = length - IPHDRLEN(ipptr) - TCPHDRLEN(tcpptr);
+
+			dumpcode(data, data_length);
+
+			return TRUE;
+		}
 	}
 
 	return FALSE;
@@ -64,8 +76,8 @@ callback(
 	}
 	
 	payload_length = nfq_get_payload(nfa, &payload);
-	if (payload_length >= 0)
-		printf("payload_len=%d ", payload_length);
+	//if (payload_length >= 0)	// Always True
+	printf("payload_len=%d ", payload_length);
 	fputc('\n', stdout);
 	dumpcode(data, payload_length);
 
