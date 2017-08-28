@@ -1,7 +1,7 @@
 .SUFFIXES : .c
  
-OBJECT = netfilter_test.o
-SRC = netfilter_test.c
+OBJECT = main.o netfilter_test.o
+SRC = main.c netfilter_test.c
  
 CC = gcc
 CFLAGS = -lnetfilter_queue -W -Wall
@@ -23,4 +23,6 @@ new :
 	@$(MAKE) -s clean
 	@$(MAKE) -s
 
-netfilter_test.o : netfilter_test.c
+netfilter_test.o : netfilter_test.c netfilter_test.h
+main.o : main.c netfilter_test.h
+
