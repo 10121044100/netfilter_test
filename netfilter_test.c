@@ -11,6 +11,7 @@
 #include <libnetfilter_queue/libnetfilter_queue.h>
 #include "netfilter_test.h"
 
+uint8_t **block_list;
 
 /*
  *	checksites
@@ -65,7 +66,6 @@ confirmblocking(
 	struct tcphdr	*tcpptr = (struct tcphdr *) (payload + IPHDRLEN(ipptr));
 	uint8_t		*data = NULL;
 	uint32_t	data_length = 0;
-	const uint8_t	*block_list[2] = {(uint8_t*)"avnana.com", };
 
 	// Check TCP from ipptr	
 	if(ipptr->protocol == IPPROTO_TCP) {
@@ -73,7 +73,7 @@ confirmblocking(
 			data = (uint8_t*) (tcpptr + TCPHDRLEN(tcpptr));
 			data_length = length - IPHDRLEN(ipptr) - TCPHDRLEN(tcpptr);
 
-			if(checksites(data, block_list, data_length))
+			if(checksites(data, (const uint8_t**)block_list, data_length))
 				return TRUE;
 		}
 	}

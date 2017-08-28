@@ -10,9 +10,12 @@
 
 #include "netfilter_test.h"
 
+uint8_t **block_list;	// a specific sites list
+
 int 
 main(
-	void)//(int argc, char **argv)
+	int argc, 
+	char *argv[])
 {
 	struct nfq_handle *h;
 	struct nfq_q_handle *qh;
@@ -20,6 +23,15 @@ main(
 	int fd;
 	int rv;
 	char buf[4096] __attribute__ ((aligned));
+
+	if(argc < 2) {
+		fprintf(stderr, "Usage: %s [Filter String] ...\n", argv[0]);
+		exit(1);
+	}
+
+	block_list = (uint8_t**) malloc(sizeof(size_t)*(argc-1));
+	for(int i=1; i<argc; i++)
+		*(block_list+(i-1)) = (uint8_t*)argv[i];
 
 	printf("opening library handle\n");
 	h = nfq_open();
